@@ -11,3 +11,5 @@ Route::get('/query/lessons-count', [QueryTestController::class, 'testLessonsCoun
 Route::get('/query/lesson-by-tag', [QueryTestController::class, 'testLessonByTag']);
 Route::get('/query/top-instructors', [QueryTestController::class, 'testTopInstructors']);
 Route::get('/query/lesson-comment-count', [QueryTestController::class, 'testLessonCommentCount']);
+
+Route::get('/test/eager-loading', [QueryTestController::class, 'testEagerLoading']);

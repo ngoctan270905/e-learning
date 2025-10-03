@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Course;
 use App\Models\Lesson;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB; // Cần import DB Facade
@@ -133,6 +134,43 @@ class QueryTestController extends Controller
         return view('queries.test-result', [
             'title' => 'Tổng số Comment của mỗi Lesson (dùng Subquery)',
             'results' => $lessonsWithCommentCount
+        ]);
+    }
+
+
+
+    public function testEagerLoading()
+    {
+        // 1. Lấy danh sách Courses kèm theo các quan hệ lồng nhau
+        $courses = Course::with([
+            'user',        // Tác giả (user)
+            'lessons',     // Danh sách bài học (lessons)
+            'lessons.tags' // Tags của mỗi bài học (Eager Loading lồng nhau)
+        ])
+        ->withCount([
+            'lessons',     // Đếm tổng số lessons (sẽ tạo cột lessons_count)
+            'comments as course_comments_count' // Đếm comment của Course (Morph Count)
+        ])
+        ->get();
+        
+        // 2. Lấy 1 Lesson cụ thể kèm theo Comment và User của Comment đó
+        $lessonId = Lesson::first()->id ?? 1; // Lấy ID của Lesson đầu tiên
+        $singleLesson = Lesson::with([
+            'comments',        // Các comment của Lesson
+            'comments.user'    // Người viết comment (user) của mỗi comment
+        ])
+        ->find($lessonId);
+
+        // Gom kết quả vào một tập hợp để hiển thị trong View chung
+        $results = collect([
+            'courses_with_relations' => $courses->take(2), // Chỉ lấy 2 course để dễ đọc
+            'single_lesson_with_comments' => $singleLesson,
+        ]);
+
+        // Truyền dữ liệu sang View
+        return view('queries.test-result', [
+            'title' => 'Eager Loading và Tối ưu hóa hiệu năng (N+1)',
+            'results' => $results
         ]);
     }
 }
