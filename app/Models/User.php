@@ -45,4 +45,12 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Relationship: A user has one profile. Một User có một Profile.
+     */
+    public function profile()
+    {
+        return $this->hasOne(Profile::class);
+    }
 }
