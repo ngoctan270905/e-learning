@@ -1,61 +1,90 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🧾 Laravel Assignment – Eloquent Relationships & Query Builder (Advanced)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## 🧩 Bối cảnh dự án
+Bạn được giao phát triển một nền tảng học trực tuyến (**E-Learning**).  
+Hệ thống bao gồm các thực thể chính:
 
-## About Laravel
+- **Users**: học viên và giảng viên  
+- **Profiles**: thông tin mở rộng của user (1-1)  
+- **Courses**: khóa học  
+- **Lessons**: bài học trong mỗi khóa học  
+- **Tags**: gắn thẻ cho bài học (n-n)  
+- **Comments**: bình luận (polymorphic: thuộc Course hoặc Lesson)  
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 🧱 Thiết kế quan hệ Eloquent
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 🔹 One-to-One
+- User **hasOne** Profile  
+- Profile **belongsTo** User  
+- Profile có các cột: `user_id`, `bio`, `birthday`, `avatar_url`
 
-## Learning Laravel
+### 🔹 One-to-Many
+- User (giảng viên) **hasMany** Course  
+- Course **hasMany** Lesson  
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### 🔹 Many-to-Many
+- Lesson **belongsToMany** Tag  
+- Tag **belongsToMany** Lesson  
+- Pivot table: `lesson_tag` gồm `lesson_id`, `tag_id`, `created_at`
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### 🔹 Polymorphic (Morph)
+- Comment **morphTo** (có thể thuộc Course hoặc Lesson)  
+- Course **morphMany** Comment  
+- Lesson **morphMany** Comment  
+- Bảng `comments`: `id`, `commentable_id`, `commentable_type`, `user_id`, `content`  
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## 🧠 Query Builder nâng cao
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Yêu cầu viết các truy vấn bằng **Query Builder** (không dùng Eloquent trực tiếp):
 
-### Premium Partners
+1. Lấy danh sách các khóa học có từ 5 bài học trở lên  
+2. Lấy các bài học có tag `'Laravel'`  
+3. Lấy **top 3 giảng viên** có nhiều khóa học nhất  
+4. Đếm tổng số comment của mỗi lesson (dùng **subquery** hoặc **join**)  
+5. Lấy khóa học kèm theo số lượng bài học (dùng `withCount()` hoặc subquery)  
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+---
 
-## Contributing
+## ⚡ Eager Loading (Tối ưu hiệu năng)
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Tránh **N+1 query** bằng cách sử dụng `with()`, `load()`, `withCount()`, `loadCount()`:
 
-## Code of Conduct
+- Lấy danh sách **courses** kèm theo:
+  - Tác giả (**user**)  
+  - Danh sách **lessons**  
+  - Mỗi lesson có **tags**  
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- Lấy một **lesson cụ thể** kèm theo:
+  - Danh sách **comments**  
+  - Người viết comment (**user**)  
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## 🧪 Kiểm thử thực tế
 
-## License
+Viết route hoặc artisan command để kiểm thử:  
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- **Tạo mới 1 khóa học** kèm theo 3 bài học (Eloquent + quan hệ 1-n)  
+- **Gắn tag** `'Laravel'` và `'Eloquent'` cho 1 bài học (dùng `attach()`, `sync()`)  
+- Lấy tất cả **comment của một course** (quan hệ `morphMany()`)  
+- Hiển thị danh sách **khóa học + tổng số bài học & comment** (dùng `withCount()`)  
+- Tìm lesson có tag `'Performance'` và nhiều hơn 3 comment (`whereHas` + `withCount`)  
+
+---
+
+## ✅ Kết quả kỳ vọng
+- Thiết lập đúng các quan hệ **Eloquent**  
+- Viết được **Query Builder** cho các truy vấn phức tạp  
+- Tối ưu hiệu năng bằng **Eager Loading**  
+- Hiểu rõ bản chất **morph**, **pivot table**, **subquery** và **joins**  
+
+---
+
+## 🔁 Gợi ý mở rộng
+- Tạo bảng **likes** sử dụng morphable cho `comment`, `course`, `lesson`  
+- Tạo `CourseController@index` kèm filter theo tag, số lượng lesson, instructor  
+- Viết **Scope** cho các model (ví dụ: `scopePopular()` cho Course)  
