@@ -13,11 +13,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // Xóa code mặc định và thay bằng lời gọi đến DemoSeeder
+        $this->call([
+            DemoSeeder::class, // Gọi seeder chứa logic tạo User, Course, Lesson, Tag, Comment...
         ]);
     }
 }
